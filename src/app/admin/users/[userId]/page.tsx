@@ -3,9 +3,9 @@ import { createServiceRoleClient } from '@/lib/supabase/service-role'
 import { StatCard } from '@/components/ui/StatCard'
 import { CategoryPieChart } from '@/components/charts/CategoryPieChart'
 
-export default async function UserDetailPage({ params }: { params: { userId: string } }) {
+export default async function UserDetailPage({ params }: { params: Promise<{ userId: string }> }) {
   const admin  = createServiceRoleClient()
-  const userId = params.userId
+  const { userId } = await params
 
   const [userRes, receiptsRes] = await Promise.all([
     admin.auth.admin.getUserById(userId),
