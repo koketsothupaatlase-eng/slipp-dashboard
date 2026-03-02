@@ -22,8 +22,11 @@ export default async function AdminOverviewPage() {
       .limit(20),
   ])
 
-  const summary  = summaryRes.data
-  const trend    = trendRes.data   ?? []
+  type PlatformSummary = { total_users: number; total_receipts: number; total_revenue: number; active_merchants: number }
+  type TrendPoint     = { year: number; month: number; transaction_count: number; total_revenue: number }
+
+  const summary  = summaryRes.data as PlatformSummary | null
+  const trend    = ((trendRes as unknown as { data: TrendPoint[] | null }).data) ?? []
   const activity = (activityRes.data ?? []) as Pick<Receipt, 'id' | 'merchant' | 'merchant_id' | 'total' | 'receipt_date' | 'category' | 'user_id'>[]
 
   return (
