@@ -18,14 +18,17 @@ export default async function UserDetailPage({ params }: { params: Promise<{ use
   ])
 
   const u        = userRes.data?.user
-  const receipts = receiptsRes.data ?? []
+  const receipts = (receiptsRes.data as import('@/types/database').Receipt[] | null) ?? []
 
   const totalSpend = receipts.reduce((s, r) => s + Number(r.total), 0)
   const avgSpend   = receipts.length ? totalSpend / receipts.length : 0
 
   // Category breakdown
   const catMap: Record<string, number> = {}
-  receipts.forEach((r) => { catMap[r.category] = (catMap[r.category] ?? 0) + Number(r.total) })
+  receipts.forEach((r) => {
+    const key = r.category ?? 'Other'
+    catMap[key] = (catMap[key] ?? 0) + Number(r.total)
+  })
   const catData = Object.entries(catMap).map(([category, total]) => ({ category, total }))
 
   return (

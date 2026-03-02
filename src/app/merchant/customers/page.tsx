@@ -14,21 +14,28 @@ export default async function CustomersPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return null
 
-  const { data: mu } = await supabase
+  const { data: muRaw } = await supabase
     .from('merchant_users')
     .select('merchant_id')
     .eq('user_id', user.id)
     .single()
 
+  const mu = muRaw as { merchant_id: string } | null
   if (!mu) return null
 
-  const { data: customers } = await supabase
+  type CustomerRow = {
+    merchant_id: string; user_id: string; display_name: string | null
+    age: number | null; gender: string | null; visit_count: number
+    lifetime_spend: number; avg_spend: number; last_visit: string
+  }
+
+  const { data: customersRaw } = await supabase
     .from('customer_insights')
     .select('*')
     .eq('merchant_id', mu.merchant_id)
     .order('lifetime_spend', { ascending: false })
 
-  const rows = customers ?? []
+  const rows = (customersRaw as CustomerRow[] | null) ?? []
   const unique   = rows.length
   const repeats  = rows.filter((r) => r.visit_count > 1).length
 
