@@ -59,7 +59,15 @@ export default async function AdminMerchantsPage() {
                   {new Date(m.created_at).toLocaleDateString('en-ZA')}
                 </td>
                 <td className="px-4 py-3">
-                  <MerchantToggle id={m.id} isActive={m.is_active} />
+                  <div className="flex items-center gap-2">
+                    <MerchantToggle id={m.id} isActive={m.is_active} />
+                    <Link
+                      href={`/admin/merchants/${m.id}/edit`}
+                      className="text-xs font-medium px-3 py-1.5 rounded-lg border border-gray-200 text-gray-600 hover:border-brand-green hover:text-brand-green transition-colors"
+                    >
+                      Edit
+                    </Link>
+                  </div>
                 </td>
               </tr>
             ))}

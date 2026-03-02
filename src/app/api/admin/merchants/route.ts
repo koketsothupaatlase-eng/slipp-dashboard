@@ -56,7 +56,7 @@ export async function POST(req: NextRequest) {
   return NextResponse.json({ merchant, user_id: newUser.user.id }, { status: 201 })
 }
 
-// PATCH /api/admin/merchants — toggle is_active
+// PATCH /api/admin/merchants — update merchant fields and/or toggle is_active
 export async function PATCH(req: NextRequest) {
   const serverClient = await createClient()
   const { data: { user } } = await serverClient.auth.getUser()
@@ -64,12 +64,21 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 
-  const { id, is_active } = await req.json()
-  const admin = createServiceRoleClient()
+  const body = await req.json()
+  const { id, is_active, name, category, address, logo_url } = body
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const admin = createServiceRoleClient() as any
+
+  const updates: Record<string, unknown> = {}
+  if (is_active !== undefined) updates.is_active = is_active
+  if (name      !== undefined) updates.name      = name
+  if (category  !== undefined) updates.category  = category
+  if (address   !== undefined) updates.address   = address
+  if (logo_url  !== undefined) updates.logo_url  = logo_url
 
   const { data, error } = await admin
     .from('merchants')
-    .update({ is_active })
+    .update(updates)
     .eq('id', id)
     .select()
     .single()
