@@ -2,18 +2,19 @@ import { createServiceRoleClient } from '@/lib/supabase/service-role'
 import { Badge } from '@/components/ui/Badge'
 import Link from 'next/link'
 import { MerchantToggle } from './MerchantToggle'
+import type { Merchant } from '@/types/database'
 
 export default async function AdminMerchantsPage() {
   const admin = createServiceRoleClient()
 
-  const { data: merchants } = await admin
+  const { data: merchantsRaw } = await admin
     .from('merchants')
     .select('*, receipts(id)')
     .order('created_at', { ascending: false })
 
-  const rows = (merchants ?? []).map((m) => ({
+  const rows = (merchantsRaw as (Merchant & { receipts: { id: string }[] })[] ?? []).map((m) => ({
     ...m,
-    receipt_count: Array.isArray((m as any).receipts) ? (m as any).receipts.length : 0,
+    receipt_count: Array.isArray(m.receipts) ? m.receipts.length : 0,
   }))
 
   return (
