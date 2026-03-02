@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { StatCard } from '@/components/ui/StatCard'
 import { SpendingTrendChart } from '@/components/charts/SpendingTrendChart'
-import type { ReceiptItem } from '@/types/database'
+import type { Receipt, ReceiptItem } from '@/types/database'
 
 function fmt(n: number) {
   return `R ${Number(n).toLocaleString('en-ZA', { minimumFractionDigits: 2 })}`
@@ -13,12 +13,13 @@ export default async function MerchantDashboardPage() {
   if (!user) return null
 
   // Get merchant_id for this user
-  const { data: mu } = await supabase
+  const { data: muRaw } = await supabase
     .from('merchant_users')
     .select('merchant_id')
     .eq('user_id', user.id)
     .single()
 
+  const mu = muRaw as { merchant_id: string } | null
   if (!mu) return null
   const mid = mu.merchant_id
 
@@ -28,7 +29,8 @@ export default async function MerchantDashboardPage() {
       .select('*')
       .eq('merchant_id', mid)
       .single(),
-    supabase.rpc('monthly_revenue', { p_merchant_id: mid }),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (supabase as any).rpc('monthly_revenue', { p_merchant_id: mid }),
     supabase
       .from('receipts')
       .select('id, total, receipt_date, category, items')
@@ -38,8 +40,8 @@ export default async function MerchantDashboardPage() {
   ])
 
   const s      = summaryRes.data
-  const trend  = trendRes.data  ?? []
-  const recent = recentRes.data ?? []
+  const trend  = (trendRes as any).data  ?? []
+  const recent = (recentRes.data ?? []) as Pick<Receipt, 'id' | 'total' | 'receipt_date' | 'category' | 'items'>[]
 
   return (
     <div className="space-y-6">

@@ -1,6 +1,6 @@
 import { createServiceRoleClient } from '@/lib/supabase/service-role'
 import { Badge } from '@/components/ui/Badge'
-import type { ReceiptItem } from '@/types/database'
+import type { Receipt, ReceiptItem } from '@/types/database'
 
 const CATEGORY_COLORS: Record<string, 'green' | 'blue' | 'yellow' | 'gray'> = {
   Food:          'green',
@@ -12,11 +12,13 @@ const CATEGORY_COLORS: Record<string, 'green' | 'blue' | 'yellow' | 'gray'> = {
 export default async function ActivityPage() {
   const admin = createServiceRoleClient()
 
-  const { data: receipts } = await admin
+  const { data: receiptsRaw } = await admin
     .from('receipts')
     .select('id, merchant, merchant_id, total, vat, receipt_date, category, items, user_id')
     .order('receipt_date', { ascending: false })
     .limit(100)
+
+  const receipts = receiptsRaw as Pick<Receipt, 'id' | 'merchant' | 'merchant_id' | 'total' | 'vat' | 'receipt_date' | 'category' | 'items' | 'user_id'>[] | null
 
   return (
     <div className="space-y-5">
@@ -54,7 +56,7 @@ export default async function ActivityPage() {
                 </div>
 
                 <div className="flex items-center gap-2 mt-2 flex-wrap">
-                  <Badge color={CATEGORY_COLORS[r.category] ?? 'gray'}>{r.category}</Badge>
+                  <Badge color={CATEGORY_COLORS[r.category ?? ''] ?? 'gray'}>{r.category ?? '—'}</Badge>
                   {items.length > 0 && (
                     <span className="text-xs text-gray-400">
                       {items.map((i) => `${i.name} ×${i.quantity}`).join(', ')}

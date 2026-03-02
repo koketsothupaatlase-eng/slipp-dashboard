@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createServiceRoleClient } from '@/lib/supabase/service-role'
 import { StatCard } from '@/components/ui/StatCard'
 import { SpendingTrendChart } from '@/components/charts/SpendingTrendChart'
+import type { Receipt } from '@/types/database'
 
 function fmt(n: number) {
   return `R ${Number(n).toLocaleString('en-ZA', { minimumFractionDigits: 2 })}`
@@ -23,7 +24,7 @@ export default async function AdminOverviewPage() {
 
   const summary  = summaryRes.data
   const trend    = trendRes.data   ?? []
-  const activity = activityRes.data ?? []
+  const activity = (activityRes.data ?? []) as Pick<Receipt, 'id' | 'merchant' | 'merchant_id' | 'total' | 'receipt_date' | 'category' | 'user_id'>[]
 
   return (
     <div className="space-y-6">
