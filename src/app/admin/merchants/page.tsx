@@ -2,6 +2,7 @@ import { createServiceRoleClient } from '@/lib/supabase/service-role'
 import { Badge } from '@/components/ui/Badge'
 import Link from 'next/link'
 import { MerchantToggle } from './MerchantToggle'
+import { DeleteMerchantButton } from './DeleteMerchantButton'
 import type { Merchant } from '@/types/database'
 
 export default async function AdminMerchantsPage() {
@@ -58,7 +59,7 @@ export default async function AdminMerchantsPage() {
                 <td className="px-4 py-3 text-gray-400 text-xs">
                   {new Date(m.created_at).toLocaleDateString('en-ZA')}
                 </td>
-                <td className="px-4 py-3">
+                <td className="px-4 py-3 whitespace-nowrap">
                   <div className="flex items-center gap-2">
                     <MerchantToggle id={m.id} isActive={m.is_active} />
                     <Link
@@ -67,6 +68,7 @@ export default async function AdminMerchantsPage() {
                     >
                       Edit
                     </Link>
+                    <DeleteMerchantButton id={m.id} name={m.name} />
                   </div>
                 </td>
               </tr>
