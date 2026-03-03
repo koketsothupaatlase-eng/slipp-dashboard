@@ -4,7 +4,8 @@ import Link from 'next/link'
 
 export default async function EditMerchantPage({ params }: { params: Promise<{ merchantId: string }> }) {
   const { merchantId } = await params
-  const admin = createServiceRoleClient()
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const admin = createServiceRoleClient() as any
 
   const { data: merchantRaw } = await admin
     .from('merchants')
@@ -16,6 +17,20 @@ export default async function EditMerchantPage({ params }: { params: Promise<{ m
     id: string; name: string; category: string
     address: string | null; logo_url: string | null
   } | null
+
+  // Fetch the linked auth user's email
+  let email = ''
+  if (merchant) {
+    const { data: linkRaw } = await admin
+      .from('merchant_users')
+      .select('user_id')
+      .eq('merchant_id', merchantId)
+      .single()
+    if (linkRaw?.user_id) {
+      const { data: { user: authUser } } = await admin.auth.admin.getUserById(linkRaw.user_id)
+      email = authUser?.email ?? ''
+    }
+  }
 
   if (!merchant) {
     return (
@@ -33,7 +48,7 @@ export default async function EditMerchantPage({ params }: { params: Promise<{ m
         <h1 className="text-xl font-bold text-gray-900">Edit {merchant.name}</h1>
       </div>
       <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
-        <EditMerchantForm merchant={merchant} />
+        <EditMerchantForm merchant={{ ...merchant, email }} />
       </div>
     </div>
   )

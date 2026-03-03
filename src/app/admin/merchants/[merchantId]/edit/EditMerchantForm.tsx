@@ -7,7 +7,7 @@ const CATEGORIES = ['Retail', 'Food & Beverage', 'Grocery', 'Pharmacy', 'Fashion
 
 interface Merchant {
   id: string; name: string; category: string
-  address: string | null; logo_url: string | null
+  address: string | null; logo_url: string | null; email: string
 }
 
 export function EditMerchantForm({ merchant }: { merchant: Merchant }) {
@@ -17,6 +17,8 @@ export function EditMerchantForm({ merchant }: { merchant: Merchant }) {
     category: merchant.category,
     address:  merchant.address  ?? '',
     logo_url: merchant.logo_url ?? '',
+    email:    merchant.email,
+    password: '',
   })
   const [loading, setLoading] = useState(false)
   const [error,   setError]   = useState<string | null>(null)
@@ -30,10 +32,13 @@ export function EditMerchantForm({ merchant }: { merchant: Merchant }) {
     setLoading(true)
     setError(null)
 
+    const payload: Record<string, string> = { id: merchant.id, ...form }
+    if (!form.password) delete payload.password   // only send if changed
+
     const res = await fetch('/api/admin/merchants', {
       method:  'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ id: merchant.id, ...form }),
+      body:    JSON.stringify(payload),
     })
 
     const data = await res.json()
@@ -76,6 +81,22 @@ export function EditMerchantForm({ merchant }: { merchant: Merchant }) {
 
       {field('Address', 'address')}
       {field('Logo URL', 'logo_url', 'url')}
+
+      <hr className="border-gray-100" />
+      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Dashboard Login Credentials</p>
+
+      {field('Email', 'email', 'email')}
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+        <input
+          type="password"
+          value={form.password}
+          onChange={(e) => set('password', e.target.value)}
+          placeholder="Leave blank to keep current"
+          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-green/40 focus:border-brand-green"
+        />
+      </div>
 
       {error && (
         <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">{error}</p>

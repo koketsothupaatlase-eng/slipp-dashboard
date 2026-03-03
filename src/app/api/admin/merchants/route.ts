@@ -66,7 +66,7 @@ export async function PATCH(req: NextRequest) {
   }
 
   const body = await req.json()
-  const { id, is_active, name, category, address, logo_url } = body
+  const { id, is_active, name, category, address, logo_url, email, password } = body
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const admin = createServiceRoleClient() as any
 
@@ -85,6 +85,25 @@ export async function PATCH(req: NextRequest) {
     .single()
 
   if (error) return NextResponse.json({ error: error.message }, { status: 400 })
+
+  // Update auth user email/password if provided
+  if (email || password) {
+    const { data: link } = await admin
+      .from('merchant_users')
+      .select('user_id')
+      .eq('merchant_id', id)
+      .single()
+
+    if (link?.user_id) {
+      const authUpdates: Record<string, string> = {}
+      if (email)    authUpdates.email    = email
+      if (password) authUpdates.password = password
+
+      const { error: authErr } = await admin.auth.admin.updateUserById(link.user_id, authUpdates)
+      if (authErr) return NextResponse.json({ error: authErr.message }, { status: 400 })
+    }
+  }
+
   return NextResponse.json(data)
 }
 
