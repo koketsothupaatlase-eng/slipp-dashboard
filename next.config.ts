@@ -8,7 +8,7 @@ const nextConfig: NextConfig = {
     ignoreDuringBuilds: true,
   },
   experimental: {
-    serverActions: { allowedOrigins: ['localhost:3000'] },
+    serverActions: { allowedOrigins: ['localhost:3000', 'merchants.slipp.co.za'] },
   },
 }
 
